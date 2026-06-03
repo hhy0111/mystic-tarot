@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Mystic Tarot",
+    "slug": "mystic-tarot",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/app/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/app/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#080512"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/app/adaptive-foreground.png",
+        "backgroundImage": "./assets/app/adaptive-background.png",
+        "backgroundColor": "#120820"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

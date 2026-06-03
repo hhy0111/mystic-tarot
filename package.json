@@ -1,0 +1,35 @@
+{
+  "name": "mystic-tarot",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
+    "@react-navigation/native": "7.2.5",
+    "@react-navigation/native-stack": "7.16.0",
+    "expo": "53.0.27",
+    "expo-linear-gradient": "~14.1.5",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-reanimated": "~3.17.4",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-web": "^0.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.1",
+    "@types/react": "~19.0.10",
+    "typescript": "~5.8.3",
+    "vitest": "4.1.7"
+  }
+}
