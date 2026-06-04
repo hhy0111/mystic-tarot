@@ -1,4 +1,6 @@
 import { tarotCards } from "../data/tarotCards";
+import { localizeReading } from "../i18n/readingLocalization";
+import type { LanguageCode } from "../i18n/translations";
 import {
   directionLabels,
   fortuneCategoryLabels,
@@ -466,7 +468,8 @@ export function resolveCardSelections(
 export function generateReading(
   category: FortuneCategory,
   selections: readonly ResolvedCardSelection[],
-  random: RandomSource = Math.random
+  random: RandomSource = Math.random,
+  language: LanguageCode = "ko"
 ): TarotReading {
   if (selections.length !== 3) {
     throw new Error("Mystic Tarot readings require exactly three selected cards.");
@@ -520,7 +523,7 @@ export function generateReading(
   const cautionCard = pickOne(cautionSource, random);
   const lotteryRecommendation = category === "lotto" ? buildLotteryRecommendation(selections) : undefined;
 
-  return {
+  const reading: TarotReading = {
     storyTitle,
     freeSummary: `${categoryLabel}에서는 ${cardDetails[0].positionLabel}에 ${cardDetails[0].cardNameKo}, ${cardDetails[2].positionLabel}에 ${cardDetails[2].cardNameKo} 카드가 나왔습니다. ${cardDetails[0].currentSituation}`,
     detailedSummary,
@@ -542,4 +545,6 @@ export function generateReading(
     lotteryBonusNumber: lotteryRecommendation?.bonusNumber,
     lotteryNote: lotteryRecommendation?.note
   };
+
+  return localizeReading(reading, language, category, selections, random);
 }

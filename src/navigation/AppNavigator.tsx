@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { CardSelectScreen } from "../screens/CardSelectScreen";
 import { LobbyScreen } from "../screens/LobbyScreen";
 import { ResultScreen } from "../screens/ResultScreen";
+import { SettingsScreen } from "../screens/SettingsScreen";
 import type { CardSelection, FortuneCategory } from "../types/tarot";
 
 export type RootStackParamList = {
@@ -15,6 +16,7 @@ export type RootStackParamList = {
     category: FortuneCategory;
     selectedCards: CardSelection[];
   };
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -45,6 +47,7 @@ export function AppNavigator() {
         <Stack.Screen name="Lobby" component={LobbyScreen} />
         <Stack.Screen name="CardSelect" component={CardSelectScreen} />
         <Stack.Screen name="Result" component={ResultScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -11,8 +11,9 @@ import Animated, {
   withTiming
 } from "react-native-reanimated";
 
+import { useLanguage } from "../i18n/LanguageContext";
+import { getCardDisplayName } from "../i18n/translations";
 import type { ResolvedCardSelection } from "../types/tarot";
-import { directionLabels } from "../types/tarot";
 import { getFocusedResultCardSize, RESULT_CARD_GAP } from "../utils/mobileLayout";
 import {
   getRevealEffectTone,
@@ -81,6 +82,7 @@ export function ResultRevealStage({
   focusIndex,
   settledCount
 }: ResultRevealStageProps) {
+  const { language, t } = useLanguage();
   const progress = useSharedValue(2);
   const focusCardSize = getFocusedResultCardSize(contentWidth);
   const activeIndex = focusIndex ?? 0;
@@ -128,6 +130,7 @@ export function ResultRevealStage({
         {cards.map((selection, index) => {
           const revealed = index < settledCount;
           const tone = getRevealEffectTone(selection.direction);
+          const cardName = getCardDisplayName(selection.card, language);
 
           return (
             <View key={`${selection.cardId}-${selection.position}`} style={[styles.resultCardItem, { width: cardSize.width }]}>
@@ -143,10 +146,10 @@ export function ResultRevealStage({
               />
               <View style={styles.cardCaptionBlock}>
                 <Text style={styles.cardCaption} numberOfLines={1} adjustsFontSizeToFit>
-                  {selection.card.nameKo}
+                  {cardName}
                 </Text>
                 <Text style={[styles.cardDirection, tone === "positive" ? styles.positiveText : styles.cautionText]}>
-                  {directionLabels[selection.direction]}
+                  {t.directions[selection.direction]}
                 </Text>
               </View>
             </View>
@@ -176,14 +179,14 @@ export function ResultRevealStage({
             showFaceMeta={false}
           />
           <View style={styles.focusCaptionBlock}>
-            <Text style={styles.focusCaption}>{activeCard.card.nameKo}</Text>
+            <Text style={styles.focusCaption}>{getCardDisplayName(activeCard.card, language)}</Text>
             <Text
               style={[
                 styles.focusDirection,
                 getRevealEffectTone(activeCard.direction) === "positive" ? styles.positiveText : styles.cautionText
               ]}
             >
-              {directionLabels[activeCard.direction]}
+              {t.directions[activeCard.direction]}
             </Text>
           </View>
         </Animated.View>

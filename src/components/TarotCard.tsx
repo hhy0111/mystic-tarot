@@ -9,8 +9,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { cardFrontImages, tarotCardBackImage, tarotCardBackSelectedImage } from "../assets/images";
+import { useLanguage } from "../i18n/LanguageContext";
+import { getCardDisplayName } from "../i18n/translations";
 import type { CardDirection, TarotCard as TarotCardData } from "../types/tarot";
-import { directionLabels } from "../types/tarot";
 import { GlowEffect } from "./GlowEffect";
 
 type TarotCardProps = {
@@ -42,15 +43,17 @@ export function TarotCard({
   placeholderLabel,
   showFaceMeta = true
 }: TarotCardProps) {
+  const { language, t } = useLanguage();
   const flip = useSharedValue(revealed ? 1 : 0);
   const lift = useSharedValue(selected ? 1 : 0);
   const frontImage = card ? cardFrontImages[card.imageKey] : undefined;
   const backImage = selected ? tarotCardBackSelectedImage : tarotCardBackImage;
+  const cardDisplayName = card ? getCardDisplayName(card, language) : t.card.hiddenCard;
   const accessibilityLabel = card
-    ? `${card.nameKo} ${directionLabels[direction]}`
+    ? `${cardDisplayName} ${t.directions[direction]}`
     : selectedOrder
-      ? `${selectedOrder}번째로 선택한 타로 카드`
-      : "타로 카드 선택";
+      ? t.card.selectedOrderLabel(selectedOrder)
+      : t.card.selectLabel;
 
   useEffect(() => {
     flip.value = withTiming(revealed ? 1 : 0, { duration: 720 });
@@ -110,13 +113,13 @@ export function TarotCard({
               ) : null}
               <View style={styles.nameBlock}>
                 <Text style={styles.cardNameKo} numberOfLines={1} adjustsFontSizeToFit>
-                  {card?.nameKo ?? "비밀 카드"}
+                  {cardDisplayName}
                 </Text>
                 <Text style={styles.cardName} numberOfLines={1} adjustsFontSizeToFit>
-                  {card?.name ?? "Hidden Arcana"}
+                  {card?.name ?? t.card.hiddenArcana}
                 </Text>
               </View>
-              <Text style={styles.direction}>{directionLabels[direction]}</Text>
+              <Text style={styles.direction}>{t.directions[direction]}</Text>
             </View>
           ) : null}
         </Animated.View>

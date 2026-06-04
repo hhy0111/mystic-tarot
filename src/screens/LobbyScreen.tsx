@@ -6,20 +6,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { backgroundImages, categoryIconImages } from "../assets/images";
 import { FortuneButton } from "../components/FortuneButton";
+import { useLanguage } from "../i18n/LanguageContext";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { fortuneCategories, fortuneCategoryLabels, type FortuneCategory } from "../types/tarot";
-import {
-  dailyRecommendationMessages,
-  getDailyRecommendedCategory
-} from "../utils/dailyRecommendation";
+import { fortuneCategories, type FortuneCategory } from "../types/tarot";
+import { getDailyRecommendedCategory } from "../utils/dailyRecommendation";
 import { MOBILE_CONTENT_MAX_WIDTH } from "../utils/mobileLayout";
 
 type LobbyScreenProps = NativeStackScreenProps<RootStackParamList, "Lobby">;
 
 export function LobbyScreen({ navigation }: LobbyScreenProps) {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<FortuneCategory | null>(null);
   const recommendedCategory = useMemo(() => getDailyRecommendedCategory(), []);
-  const recommendedLabel = fortuneCategoryLabels[recommendedCategory];
+  const recommendedLabel = t.categories[recommendedCategory];
   const recommendationSelected = selectedCategory === recommendedCategory;
 
   return (
@@ -27,16 +26,25 @@ export function LobbyScreen({ navigation }: LobbyScreenProps) {
       <LinearGradient colors={["rgba(8,5,18,0.64)", "rgba(20,16,52,0.72)", "rgba(36,16,74,0.84)"]} style={styles.gradient}>
         <SafeAreaView style={styles.container}>
           <View style={styles.phoneFrame}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t.common.settings}
+              onPress={() => navigation.navigate("Settings")}
+              style={({ pressed }) => [styles.settingsButton, pressed && styles.settingsButtonPressed]}
+            >
+              <Text style={styles.settingsIcon}>⚙</Text>
+            </Pressable>
+
             <View style={styles.header}>
-              <Text style={styles.kicker}>오늘의 카드가 열리는 시간</Text>
-              <Text style={styles.title}>Mystic Tarot</Text>
-              <Text style={styles.subtitle}>운세를 고르고 세 장을 펼쳐 보세요.</Text>
+              <Text style={styles.kicker}>{t.lobby.kicker}</Text>
+              <Text style={styles.title}>{t.common.appName}</Text>
+              <Text style={styles.subtitle}>{t.lobby.subtitle}</Text>
             </View>
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`오늘의 추천 리딩 ${recommendedLabel}`}
-              accessibilityHint="선택하면 추천 운세 항목이 활성화됩니다."
+              accessibilityLabel={t.lobby.recommendationAccessibility(recommendedLabel)}
+              accessibilityHint={t.lobby.recommendationHint}
               accessibilityState={{ selected: recommendationSelected }}
               onPress={() => setSelectedCategory(recommendedCategory)}
               style={({ pressed }) => [
@@ -45,9 +53,9 @@ export function LobbyScreen({ navigation }: LobbyScreenProps) {
                 pressed && styles.recommendationPressed
               ]}
             >
-              <Text style={styles.recommendationKicker}>오늘의 추천 리딩</Text>
+              <Text style={styles.recommendationKicker}>{t.lobby.recommendationLabel}</Text>
               <Text style={styles.recommendationTitle}>{recommendedLabel}</Text>
-              <Text style={styles.recommendationBody}>{dailyRecommendationMessages[recommendedCategory]}</Text>
+              <Text style={styles.recommendationBody}>{t.dailyRecommendationMessages[recommendedCategory]}</Text>
             </Pressable>
 
             <View style={styles.categoryGrid}>
@@ -55,11 +63,11 @@ export function LobbyScreen({ navigation }: LobbyScreenProps) {
                 <FortuneButton
                   key={category}
                   iconSource={categoryIconImages[category]}
-                  label={fortuneCategoryLabels[category]}
+                  label={t.categories[category]}
                   selected={selectedCategory === category}
                   variant="category"
                   onPress={() => setSelectedCategory(category)}
-                  accessibilityHint="선택하면 카드 뽑기 시작 버튼이 활성화됩니다."
+                  accessibilityHint={t.lobby.categoryHint}
                   style={styles.categoryButton}
                 />
               ))}
@@ -67,9 +75,9 @@ export function LobbyScreen({ navigation }: LobbyScreenProps) {
 
             <View style={styles.footer}>
               <FortuneButton
-                label="카드 뽑기 시작"
+                label={t.lobby.startButton}
                 disabled={!selectedCategory}
-                accessibilityHint={selectedCategory ? "선택한 운세의 카드 선택 화면으로 이동합니다." : "운세 항목을 먼저 선택하세요."}
+                accessibilityHint={selectedCategory ? t.lobby.startEnabledHint : t.lobby.startDisabledHint}
                 onPress={() => {
                   if (selectedCategory) {
                     navigation.navigate("CardSelect", { category: selectedCategory });
@@ -107,7 +115,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingTop: 24,
     paddingBottom: 18,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    position: "relative"
+  },
+  settingsButton: {
+    position: "absolute",
+    top: 12,
+    right: 8,
+    zIndex: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    borderColor: "rgba(216, 178, 95, 0.38)",
+    backgroundColor: "rgba(16, 9, 34, 0.62)",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  settingsButtonPressed: {
+    transform: [{ scale: 0.96 }]
+  },
+  settingsIcon: {
+    color: "#f4d886",
+    fontSize: 20,
+    fontWeight: "900"
   },
   header: {
     gap: 12,

@@ -8,8 +8,8 @@ import { backgroundImages } from "../assets/images";
 import { FortuneButton } from "../components/FortuneButton";
 import { ResultSection } from "../components/ResultSection";
 import { ResultRevealStage } from "../components/ResultRevealStage";
+import { useLanguage } from "../i18n/LanguageContext";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { fortuneCategoryLabels } from "../types/tarot";
 import {
   getMobileContentWidth,
   getResultCardSize,
@@ -22,6 +22,7 @@ import { generateReading, resolveCardSelections } from "../utils/tarotEngine";
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, "Result">;
 
 export function ResultScreen({ navigation, route }: ResultScreenProps) {
+  const { language, t } = useLanguage();
   const { width } = useWindowDimensions();
   const { category, selectedCards } = route.params;
   const [settledCount, setSettledCount] = useState(0);
@@ -36,18 +37,18 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
     } catch (error) {
       return {
         cards: [],
-        error: error instanceof Error ? error.message : "결과 데이터를 불러오지 못했습니다."
+        error: error instanceof Error ? error.message : t.result.fallbackError
       };
     }
-  }, [selectedCards]);
+  }, [selectedCards, t.result.fallbackError]);
 
   const reading = useMemo(() => {
     if (resolvedState.cards.length !== 3) {
       return null;
     }
 
-    return generateReading(category, resolvedState.cards);
-  }, [category, resolvedState.cards]);
+    return generateReading(category, resolvedState.cards, Math.random, language);
+  }, [category, language, resolvedState.cards]);
 
   useEffect(() => {
     setSettledCount(0);
@@ -86,7 +87,7 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
         setShowDetail(true);
       }
     } catch {
-      setAdError("광고 확인에 실패했습니다. 잠시 후 다시 시도하세요.");
+      setAdError(t.result.adError);
     } finally {
       setIsLoadingAd(false);
     }
@@ -99,12 +100,12 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
           <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             <View style={styles.phoneFrame}>
               <View style={styles.header}>
-                <Text style={styles.category}>{fortuneCategoryLabels[category]}</Text>
-                <Text style={styles.title}>당신의 세 장</Text>
+                <Text style={styles.category}>{t.categories[category]}</Text>
+                <Text style={styles.title}>{t.result.title}</Text>
               </View>
 
               {resolvedState.error ? (
-                <ResultSection title="결과 오류" body={resolvedState.error} />
+                <ResultSection title={t.result.resultErrorTitle} body={resolvedState.error} />
               ) : (
                 <>
                   <View style={styles.cardStage}>
@@ -121,16 +122,16 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                     <>
                       <View style={styles.freeGrid}>
                         <View style={styles.storyHeader}>
-                          <Text style={styles.storyKicker}>이번 리딩의 핵심</Text>
+                          <Text style={styles.storyKicker}>{t.result.storyKicker}</Text>
                           <Text style={styles.storyTitle}>{reading.storyTitle}</Text>
                         </View>
-                        <ResultSection title="총평" body={reading.freeSummary} />
+                        <ResultSection title={t.result.totalSummary} body={reading.freeSummary} />
                         <View style={styles.scoreBox}>
-                          <Text style={styles.scoreLabel}>운세 점수</Text>
+                          <Text style={styles.scoreLabel}>{t.result.score}</Text>
                           <Text style={styles.score}>{reading.score}</Text>
                         </View>
                         {reading.lotteryNumbers ? (
-                          <ResultSection title="카드 추천 번호">
+                          <ResultSection title={t.result.lotteryNumbers}>
                             <View style={styles.lotteryGrid}>
                               {reading.lotteryNumbers.map((number) => (
                                 <View key={number} style={styles.lotteryBall}>
@@ -149,13 +150,13 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                             {reading.lotteryNote ? <Text style={styles.lotteryNote}>{reading.lotteryNote}</Text> : null}
                           </ResultSection>
                         ) : null}
-                        <ResultSection title="한 줄 조언" body={reading.oneLineAdvice} />
+                        <ResultSection title={t.result.oneLineAdvice} body={reading.oneLineAdvice} />
                       </View>
 
                       {!showDetail ? (
                         <View style={styles.rewardBlock}>
                           <FortuneButton
-                            label={isLoadingAd ? "광고 확인 중..." : "광고 보고 상세 해석 보기"}
+                            label={isLoadingAd ? t.result.loadingAd : t.result.rewardButton}
                             disabled={isLoadingAd}
                             onPress={handleRewardPress}
                           />
@@ -163,38 +164,38 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                         </View>
                       ) : (
                         <View style={styles.detailBlock}>
-                          <ResultSection title="상세 총평" body={reading.detailedSummary} />
+                          <ResultSection title={t.result.detailSummary} body={reading.detailedSummary} />
                           {reading.lotteryNumbers ? (
                             <ResultSection
-                              title="번호가 나온 흐름"
-                              body={`${reading.cardDetails[0].cardNameKo} 카드는 첫 번호 흐름을 열고, ${reading.cardDetails[1].cardNameKo} 카드는 중간 숫자의 균형을 잡으며, ${reading.cardDetails[2].cardNameKo} 카드는 보너스 번호의 분위기를 만듭니다. 이 조합은 카드 상징을 숫자로 바꾼 재미용 해석이며 실제 결과를 예측하지 않습니다.`}
+                              title={t.result.lotteryFlow}
+                              body={t.result.lotteryFlowBody(reading.cardDetails.map((detail) => detail.cardNameKo))}
                             />
                           ) : null}
-                          <ResultSection title="지금 이런 상황일 수 있어요" body={reading.situationOverview} />
+                          <ResultSection title={t.result.situationOverview} body={reading.situationOverview} />
                           {reading.cardDetails.map((detail, index) => (
                             <ResultSection
                               key={`${detail.cardId}-${detail.position}`}
-                              title={`카드 ${index + 1} 해석 · ${detail.positionLabel}`}
+                              title={t.result.cardReadingTitle(index, detail.positionLabel)}
                             >
                               <Text style={styles.detailTitle}>
                                 {detail.cardNameKo} · {detail.directionLabel}
                               </Text>
-                              <Text style={styles.detailLabel}>카드 설명</Text>
+                              <Text style={styles.detailLabel}>{t.result.cardMeaning}</Text>
                               <Text style={styles.detailBody}>{detail.cardMeaning}</Text>
-                            <Text style={styles.detailLabel}>현재 운세</Text>
+                            <Text style={styles.detailLabel}>{t.result.currentFortune}</Text>
                             <Text style={styles.detailBody}>{detail.currentSituation}</Text>
-                            <Text style={styles.detailLabel}>상황 예시</Text>
+                            <Text style={styles.detailLabel}>{t.result.situationExample}</Text>
                             <Text style={styles.detailBody}>{detail.situationExample}</Text>
-                            <Text style={styles.detailLabel}>왜 중요할까요</Text>
+                            <Text style={styles.detailLabel}>{t.result.whyImportant}</Text>
                             <Text style={styles.detailBody}>{detail.whyThisMatters}</Text>
-                            <Text style={styles.detailLabel}>조언</Text>
+                            <Text style={styles.detailLabel}>{t.result.advice}</Text>
                             <Text style={styles.detailAdvice}>{detail.advice}</Text>
-                            <Text style={styles.detailLabel}>현실 행동</Text>
+                            <Text style={styles.detailLabel}>{t.result.nextAction}</Text>
                             <Text style={styles.detailAdvice}>{detail.nextStep}</Text>
                           </ResultSection>
                         ))}
-                        <ResultSection title="세 카드 연결 해석" body={reading.connectionReading} />
-                        <ResultSection title="공감 포인트">
+                        <ResultSection title={t.result.connectionReading} body={reading.connectionReading} />
+                        <ResultSection title={t.result.relatablePatterns}>
                           <View style={styles.list}>
                             {reading.relatablePatterns.map((item, index) => (
                               <Text key={item} style={styles.listItem}>
@@ -203,7 +204,7 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                             ))}
                           </View>
                         </ResultSection>
-                        <ResultSection title="오늘 해볼 행동">
+                        <ResultSection title={t.result.actionItems}>
                           <View style={styles.list}>
                             {reading.actionItems.map((item, index) => (
                               <Text key={item} style={styles.listItem}>
@@ -212,7 +213,7 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                             ))}
                           </View>
                         </ResultSection>
-                        <ResultSection title="상황별 추천 행동">
+                        <ResultSection title={t.result.practicalNextSteps}>
                           <View style={styles.list}>
                             {reading.practicalNextSteps.map((item, index) => (
                               <Text key={item} style={styles.listItem}>
@@ -221,7 +222,7 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                             ))}
                           </View>
                         </ResultSection>
-                        <ResultSection title="피해야 할 행동">
+                        <ResultSection title={t.result.avoidActions}>
                             <View style={styles.list}>
                               {reading.avoidActions.map((item, index) => (
                                 <Text key={item} style={styles.listItem}>
@@ -230,14 +231,14 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
                               ))}
                             </View>
                           </ResultSection>
-                          <ResultSection title="타이밍 힌트" body={reading.timingHint} />
-                          <ResultSection title="종합 흐름" body={reading.overallFlow} />
-                          <ResultSection title="주의할 점" body={reading.caution} />
+                          <ResultSection title={t.result.timingHint} body={reading.timingHint} />
+                          <ResultSection title={t.result.overallFlow} body={reading.overallFlow} />
+                          <ResultSection title={t.result.caution} body={reading.caution} />
                           <View style={styles.luckyRow}>
-                            <ResultSection title="행운의 색상">
+                            <ResultSection title={t.result.luckyColor}>
                               <Text style={styles.luckyText}>{reading.luckyColor}</Text>
                             </ResultSection>
-                            <ResultSection title="행운의 숫자">
+                            <ResultSection title={t.result.luckyNumber}>
                               <Text style={styles.luckyText}>{reading.luckyNumber}</Text>
                             </ResultSection>
                           </View>
@@ -250,11 +251,11 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
 
               <View style={styles.actions}>
                 <FortuneButton
-                  label="다시 보기"
+                  label={t.result.retry}
                   variant="secondary"
                   onPress={() => navigation.replace("CardSelect", { category })}
                 />
-                <FortuneButton label="다른 운세 보기" variant="secondary" onPress={() => navigation.popToTop()} />
+                <FortuneButton label={t.result.otherFortune} variant="secondary" onPress={() => navigation.popToTop()} />
               </View>
             </View>
           </ScrollView>
