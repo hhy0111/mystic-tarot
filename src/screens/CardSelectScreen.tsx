@@ -139,6 +139,34 @@ function findNearestSelectableCandidate(
   return undefined;
 }
 
+function getPressLocationX(event: GestureResponderEvent, fallbackWidth: number): number {
+  const nativeEvent = event.nativeEvent as GestureResponderEvent["nativeEvent"] & {
+    offsetX?: number;
+    clientX?: number;
+  };
+  const locationX = nativeEvent.locationX;
+  const offsetX = nativeEvent.offsetX;
+  const clientX = nativeEvent.clientX;
+
+  if (typeof locationX === "number" && Number.isFinite(locationX)) {
+    return locationX;
+  }
+
+  if (typeof offsetX === "number" && Number.isFinite(offsetX)) {
+    return offsetX;
+  }
+
+  const currentTarget = (event as unknown as {
+    currentTarget?: { getBoundingClientRect?: () => { left: number } };
+  }).currentTarget;
+
+  if (typeof clientX === "number" && Number.isFinite(clientX) && currentTarget?.getBoundingClientRect) {
+    return clientX - currentTarget.getBoundingClientRect().left;
+  }
+
+  return fallbackWidth / 2;
+}
+
 export function CardSelectScreen({ navigation, route }: CardSelectScreenProps) {
   const { width } = useWindowDimensions();
   const { category } = route.params;
@@ -187,7 +215,7 @@ export function CardSelectScreen({ navigation, route }: CardSelectScreenProps) {
       return;
     }
 
-    const locationX = Math.max(0, Math.min(fanStageWidth, event.nativeEvent.locationX));
+    const locationX = Math.max(0, Math.min(fanStageWidth, getPressLocationX(event, fanStageWidth)));
     const targetIndex = Math.round((locationX / fanStageWidth) * (group.candidates.length - 1));
     const candidate = findNearestSelectableCandidate(group.candidates, targetIndex, selectedIndexes);
 
