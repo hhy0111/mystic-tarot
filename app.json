@@ -6,16 +6,31 @@
     "orientation": "portrait",
     "icon": "./assets/app/icon.png",
     "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/app/splash.png",
       "resizeMode": "cover",
       "backgroundColor": "#080512"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hhy0111.mystictarot",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/app/adaptive-foreground.png",
         "backgroundImage": "./assets/app/adaptive-background.png",
@@ -24,6 +39,21 @@
     },
     "web": {
       "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-4402708884038037~4147084988",
+          "optimizeInitialization": true,
+          "optimizeAdLoading": true
+        }
+      ]
+    ],
+    "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-4402708884038037~4147084988",
+      "optimize_initialization": true,
+      "optimize_ad_loading": true
     }
   }
 }

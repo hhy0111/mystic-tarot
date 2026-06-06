@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "noEmit": true,
+    "moduleSuffixes": [".native", ".web", ""],
     "types": ["vitest/globals", "node"]
   },
   "include": ["App.tsx", "src", "vitest.config.mts"]

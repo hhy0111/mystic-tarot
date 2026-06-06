@@ -35,8 +35,7 @@ import {
 } from "../utils/mobileLayout";
 import {
   DEFAULT_DRAW_CANDIDATE_COUNT,
-  createRandomCardCandidates,
-  resolveCardSelections
+  createRandomCardCandidates
 } from "../utils/tarotEngine";
 
 type CardSelectScreenProps = NativeStackScreenProps<RootStackParamList, "CardSelect">;
@@ -165,7 +164,6 @@ export function CardSelectScreen({ navigation, route }: CardSelectScreenProps) {
     () => buildFanGroups(drawCandidates, cardsById, t.cardSelect.fanGroups),
     [cardsById, drawCandidates, t.cardSelect.fanGroups]
   );
-  const resolvedSelections = useMemo(() => resolveCardSelections(selectedCards), [selectedCards]);
   const contentWidth = getCardSelectContentWidth(width);
   const fanCardSize = getFanCardSize(contentWidth);
   const fanStageHeight = getFanStageHeight(contentWidth);
@@ -331,7 +329,7 @@ export function CardSelectScreen({ navigation, route }: CardSelectScreenProps) {
 
               <View style={styles.slots}>
                 {tarotPositions.map((position, index) => {
-                  const selected = resolvedSelections[index];
+                  const selected = selectedCards[index];
                   const label = t.slotLabels[position];
 
                   return (
@@ -340,11 +338,11 @@ export function CardSelectScreen({ navigation, route }: CardSelectScreenProps) {
                       <View style={[styles.slot, { width: slotCardSize.width, height: slotCardSize.height }]}>
                         {selected ? (
                           <TarotCard
-                            card={selected.card}
-                            direction={selected.direction}
-                            revealed
+                            selected
+                            selectedOrder={index + 1}
                             width={slotCardSize.width}
                             height={slotCardSize.height}
+                            placeholderLabel={t.card.hiddenCard}
                           />
                         ) : (
                           <Text style={styles.slotText}>{label}</Text>

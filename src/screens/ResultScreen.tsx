@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageBackground, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,8 +15,8 @@ import {
   getResultCardSize,
   MOBILE_CONTENT_MAX_WIDTH
 } from "../utils/mobileLayout";
-import { mockRewardAd } from "../utils/mockRewardAd";
 import { getRevealTiming } from "../utils/revealEffects";
+import { showDetailedReadingRewardedAd, showResultInterstitialAd } from "../services/adMob";
 import { generateReading, resolveCardSelections } from "../utils/tarotEngine";
 
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, "Result">;
@@ -30,6 +30,7 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
   const [showDetail, setShowDetail] = useState(false);
   const [isLoadingAd, setIsLoadingAd] = useState(false);
   const [adError, setAdError] = useState<string | null>(null);
+  const resultInterstitialShownRef = useRef(false);
 
   const resolvedState = useMemo(() => {
     try {
@@ -74,6 +75,19 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, [selectedCards]);
 
+  useEffect(() => {
+    if (!reading || resultInterstitialShownRef.current) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      resultInterstitialShownRef.current = true;
+      void showResultInterstitialAd();
+    }, 2400);
+
+    return () => clearTimeout(timer);
+  }, [reading]);
+
   const contentWidth = getMobileContentWidth(width);
   const cardSize = getResultCardSize(contentWidth);
 
@@ -82,9 +96,11 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
     setIsLoadingAd(true);
 
     try {
-      const reward = await mockRewardAd();
-      if (reward.success) {
+      const isRewarded = await showDetailedReadingRewardedAd();
+      if (isRewarded) {
         setShowDetail(true);
+      } else {
+        setAdError(t.result.adError);
       }
     } catch {
       setAdError(t.result.adError);
